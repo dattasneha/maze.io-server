@@ -65,7 +65,7 @@ const login = asyncHandler(async (req, res) => {
     const userExists = await prisma.user.findUnique({ where: { email: email } });
 
     if (!userExists) {
-        prisma.user.update({
+        await prisma.user.update({
             where: {
                 id: guestId
             },
