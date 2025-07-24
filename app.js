@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import routes from "./routes/routes.config.js";
 
 const app = express();
 
@@ -11,5 +12,6 @@ app.use(
         credentials: true
     })
 );
+app.use("/api/v1", routes);
 app.use(cookieParser());
 export { app };
