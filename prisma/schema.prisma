@@ -16,3 +16,29 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
+
+model GameMode {
+    id          String           @id
+    name        String
+    description String?
+    options     GameModeOption[]
+}
+
+model GameModeOption {
+    id           String         @id @default(uuid())
+    gameMode     GameMode       @relation(fields: [gameModeId], references: [id])
+    gameModeId   String
+    key          String
+    label        String
+    type         GameOptionType
+    values       String[]
+    min          Int?
+    max          Int?
+    defaultValue String
+    description  String
+}
+
+enum GameOptionType {
+    dropdown
+    number
+}
