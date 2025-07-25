@@ -8,20 +8,20 @@ import { cookieOptions } from "../constants/cookieOptions.js";
 import { generateAccessToken } from "../utils/tokenGenerator.js";
 
 const guestLogin = asyncHandler(async (req, res) => {
-    const newUser = await prisma.user.create({
+    const user = await prisma.user.create({
         data: {
             isGuest: true
         }
     });
 
-    const accessToken = generateAccessToken(newUser);
+    const accessToken = generateAccessToken(user);
 
     return res
         .status(STATUS.SUCCESS.OK)
         .cookie("accessToken", accessToken, cookieOptions)
         .json(
             new ApiResponse(
-                { newUser, accessToken },
+                { user, accessToken },
                 "Guest user created successfully"
             )
         );
@@ -106,7 +106,7 @@ const login = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, cookieOptions)
         .json(
             new ApiResponse(
-                { sanitizedUser, accessToken },
+                { user: sanitizedUser, accessToken },
                 "User logged in successfully."
             )
         )
