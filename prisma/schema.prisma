@@ -8,13 +8,15 @@ datasource db {
 }
 
 model User {
-    id        String   @id @default(uuid())
-    email     String?  @unique
-    name      String?
-    password  String?
-    isGuest   Boolean
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id           String   @id @default(uuid())
+    email        String?  @unique
+    name         String?
+    password     String?
+    isGuest      Boolean
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+    rooms        Room[]   @relation("RoomUsers")
+    createdRooms Room[]   @relation("RoomCreator")
 }
 
 model GameMode {
@@ -22,10 +24,10 @@ model GameMode {
     name        String
     description String?
     options     GameModeOption[]
+    rooms       Room[]
 }
 
 model GameModeOption {
-    id           String         @id @default(uuid())
     gameMode     GameMode       @relation(fields: [gameModeId], references: [id])
     gameModeId   String
     key          String
@@ -36,9 +38,46 @@ model GameModeOption {
     max          Int?
     defaultValue String
     description  String
+    roomOptions  RoomOption[]
+
+    @@id([gameModeId, key])
 }
 
 enum GameOptionType {
     dropdown
     number
+}
+
+model Room {
+    id           String       @id @default(uuid())
+    name         String
+    type         RoomType
+    gameMode     GameMode     @relation(fields: [selectedMode], references: [id])
+    selectedMode String
+    options      RoomOption[]
+    users        User[]       @relation("RoomUsers")
+    creator      User         @relation("RoomCreator", fields: [createdBy], references: [id])
+    createdBy    String
+    roomCode     String
+    createdAt    DateTime     @default(now())
+}
+
+model RoomOption {
+    id             String         @id @default(uuid())
+    gameModeOption GameModeOption @relation(fields: [gameModeId, name], references: [gameModeId, key])
+    gameModeId     String
+    name           String
+    value          String
+    room           Room           @relation(fields: [roomId], references: [id])
+    roomId         String
+}
+
+enum RoomOptionType {
+    text
+    number
+}
+
+enum RoomType {
+    Public
+    Private
 }
