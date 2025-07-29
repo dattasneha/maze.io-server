@@ -65,6 +65,10 @@ const createRoom = asyncHandler(async (req, res) => {
 
     }
 
+    const updatedOptions = options.map(option => ({
+        ...option,
+        gameModeId: selectedMode
+    }));
     const roomCode = generateRandomCode(6);
     const room = await prisma.room.create({
         data: {
@@ -72,7 +76,7 @@ const createRoom = asyncHandler(async (req, res) => {
             type: type,
             selectedMode: selectedMode,
             options: {
-                create: options
+                create: updatedOptions
             },
             users: { connect: [{ id: req.user.id }] },
             createdBy: req.user.id,
