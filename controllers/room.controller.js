@@ -95,4 +95,50 @@ const createRoom = asyncHandler(async (req, res) => {
 
 });
 
-export { createRoom }
+const joinRoom = asyncHandler(async (req, res) => {
+    const roomCode = req.query.code;
+    if (!roomCode) {
+        throw new ApiError(
+            STATUS.CLIENT_ERROR.NOT_ACCEPTABLE,
+            "Room code is required!"
+        );
+    }
+    const getRoom = await prisma.room.findFirst({
+        where: {
+            roomCode: roomCode
+        }
+    });
+
+    if (!getRoom) {
+        throw new ApiError(
+            STATUS.CLIENT_ERROR.NOT_ACCEPTABLE,
+            "Please enter a valid roomCode!"
+        );
+    }
+
+    const room = await prisma.room.update({
+        where: { id: getRoom.id },
+        data: {
+            users: {
+                connect: { id: req.user.id }
+            }
+        },
+        include: {
+            options: true,
+            users: {
+                select: { id: true }
+            }
+        }
+    });
+
+    return res
+        .status(STATUS.SUCCESS.OK)
+        .json(
+            new ApiResponse(
+                room,
+                "Room joined successfully!"
+            )
+        );
+});
+
+export { createRoom, joinRoom }
