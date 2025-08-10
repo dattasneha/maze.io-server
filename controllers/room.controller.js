@@ -4,6 +4,8 @@ import ApiError from "../utils/apiError.js";
 import { STATUS } from "../constants/statusCodes.js";
 import { prisma } from "../utils/prismaClient.js";
 import { generateRandomCode } from "../utils/randomCodeGenerator.js";
+import { getIo } from "../socket/index.js";
+import { handleJoinRoom } from "../events/joinRoom.js";
 
 const createRoom = asyncHandler(async (req, res) => {
     const { name, type, selectedMode, options } = req.body;

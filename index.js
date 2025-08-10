@@ -1,5 +1,6 @@
 import dotenv from "dotenv"
 import { app } from "./app.js"
+import { initSocketServer } from "./socket/index.js";
 
 dotenv.config({
     path: "./.env",
@@ -8,6 +9,8 @@ dotenv.config({
 
 const port = process.env.PORT || 8000;
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server is listening at PORT: ${port}`);
 });
+
+initSocketServer(server);
