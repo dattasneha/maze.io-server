@@ -14,7 +14,8 @@ export const handleJoinRoom = async (socket, io, { roomId, player }) => {
                     name: true
                 }
             },
-            gameMode: true
+            gameMode: true,
+            options: true
         },
     });
     if (!room) {
