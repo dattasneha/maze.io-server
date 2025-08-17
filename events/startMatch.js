@@ -49,6 +49,15 @@ export const startMatch = async (socket, io, { roomId }) => {
     const maze = recursiveDivisionMaze(array);
     const grid = createMazeArray(isMazeSize.row, isMazeSize.col, maze);
 
+    for (let r = 0; r < isMazeSize.row; r++) {
+        grid[r][0] = 1;
+        grid[r][isMazeSize.col - 1] = 1;
+    }
+    for (let c = 0; c < isMazeSize.col; c++) {
+        grid[0][c] = 1;
+        grid[isMazeSize.row - 1][c] = 1;
+    }
+
     io.to(roomId).emit(SOCKET_EVENTS.MAZE_CREATED, {
         gameMode,
         mazeSize: isMazeSize,
