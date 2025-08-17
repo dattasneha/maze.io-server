@@ -6,11 +6,14 @@ import { prisma } from "../utils/prismaClient.js";
 import bcrypt from "bcrypt";
 import { cookieOptions } from "../constants/cookieOptions.js";
 import { generateAccessToken } from "../utils/tokenGenerator.js";
+import { generateUsername } from "unique-username-generator";
 
 const guestLogin = asyncHandler(async (req, res) => {
+    const username = generateUsername();
     const user = await prisma.user.create({
         data: {
-            isGuest: true
+            isGuest: true,
+            name: username
         }
     });
 
@@ -28,14 +31,9 @@ const guestLogin = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-    const { email, password, name } = req.body;
+    const { email, password } = req.body;
     const guestId = req.user.id;
-    if (!name) {
-        throw new ApiError(
-            STATUS.CLIENT_ERROR.NOT_ACCEPTABLE,
-            "Name is required!"
-        );
-    }
+
     if (!email) {
         throw new ApiError(
             STATUS.CLIENT_ERROR.NOT_ACCEPTABLE,
@@ -72,7 +70,6 @@ const login = asyncHandler(async (req, res) => {
             data: {
                 email: email,
                 password: await bcrypt.hash(password, 10),
-                name: name,
                 isGuest: false
             }
         });
