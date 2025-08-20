@@ -6,6 +6,7 @@ import { prisma } from "../utils/prismaClient.js";
 import { generateRandomCode } from "../utils/randomCodeGenerator.js";
 import { getIo } from "../socket/index.js";
 import { handleJoinRoom } from "../events/joinRoom.js";
+import { keys } from "../constants/gameModeOptionKeys.js";
 
 const createRoom = asyncHandler(async (req, res) => {
     const { name, type, selectedMode, options } = req.body;
@@ -121,7 +122,34 @@ const joinRoom = asyncHandler(async (req, res) => {
             "Please enter a valid roomCode!"
         );
     }
+    const maxPlayerCount = await prisma.gameModeOption.findUnique(
+        {
+            where: {
+                gameModeId_key: {
+                    gameModeId: getRoom.selectedMode,
+                    key: keys.PLAYERCOUNT
+                }
+            },
+            select: {
+                max: true
+            }
+        }
+    );
+    const roomMemberCount = await prisma.room.findUnique({
+        where: { id: roomId },
+        select: {
+            _count: {
+                select: { users: true }
+            }
+        }
+    });
 
+    if (roomMemberCount == maxPlayerCount) {
+        throw new ApiError(
+            STATUS.CLIENT_ERROR.NOT_ACCEPTABLE,
+            "No more player can join the room."
+        );
+    }
     const room = await prisma.room.update({
         where: { id: getRoom.id },
         data: {
