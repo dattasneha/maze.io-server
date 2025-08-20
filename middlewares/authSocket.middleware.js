@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
 import { prisma } from "../utils/prismaClient.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
+import cookie from "cookie";
 export const verifyJwt = asyncHandler(async (socket, next) => {
     try {
-
-        const token = socket.handshake.auth?.token ||
+        const cookies = cookie.parse(socket.handshake.headers?.cookie || "")
+        const token = cookies.accessToken ||
             socket.handshake.headers?.authorization?.replace("Bearer ", "");
 
         if (!token) {
