@@ -57,7 +57,12 @@ export const startMatch = async (socket, io, { roomId }) => {
         grid[0][c] = 1;
         grid[isMazeSize.row - 1][c] = 1;
     }
-
+    await prisma.room.update({
+        where: { id: roomId },
+        data: {
+            mazeLayout: grid
+        }
+    });
     io.to(roomId).emit(SOCKET_EVENTS.MAZE_CREATED, {
         gameMode,
         mazeSize: isMazeSize,
