@@ -5,6 +5,7 @@ export const SOCKET_EVENTS = {
     START_MATCH: "start-match",
     MAZE_CREATED: "maze-created",
     PLAYER_MOVE: "player-move",
+    LEFT_ROOM: "left-room",
     GAME_OVER: "game-over",
     ERROR_MESSAGE: "error-message"
 };

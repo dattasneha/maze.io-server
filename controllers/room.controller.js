@@ -122,6 +122,7 @@ const joinRoom = asyncHandler(async (req, res) => {
             "Please enter a valid roomCode!"
         );
     }
+
     const maxPlayerCount = await prisma.gameModeOption.findUnique(
         {
             where: {
@@ -136,7 +137,7 @@ const joinRoom = asyncHandler(async (req, res) => {
         }
     );
     const roomMemberCount = await prisma.room.findUnique({
-        where: { id: roomId },
+        where: { id: getRoom.id },
         select: {
             _count: {
                 select: { users: true }
@@ -144,7 +145,7 @@ const joinRoom = asyncHandler(async (req, res) => {
         }
     });
 
-    if (roomMemberCount == maxPlayerCount) {
+    if (roomMemberCount?._count.users == maxPlayerCount?.max) {
         throw new ApiError(
             STATUS.CLIENT_ERROR.NOT_ACCEPTABLE,
             "No more player can join the room."
