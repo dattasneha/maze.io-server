@@ -5,8 +5,12 @@ export const mazeSize = {
             col: 20
         },
         medium: {
-            row: 20,
-            col: 20
+            row: 30,
+            col: 30
+        },
+        large: {
+            row: 40,
+            col: 40
         }
     },
     'maze-royale': {
@@ -18,6 +22,10 @@ export const mazeSize = {
             row: 60,
             col: 40
         },
+        large: {
+            row: 80,
+            col: 60
+        }
     },
     'tag-maze': {
         small: {
@@ -27,6 +35,10 @@ export const mazeSize = {
         medium: {
             row: 40,
             col: 40
+        },
+        large: {
+            row: 60,
+            col: 60
         }
     },
 
