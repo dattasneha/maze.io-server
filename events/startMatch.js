@@ -11,7 +11,8 @@ export const startMatch = async (socket, io, { roomId }) => {
         where: { id: roomId },
         include: {
             creator: true,
-            gameMode: true
+            gameMode: true,
+            users: true
         }
     });
 
@@ -63,6 +64,38 @@ export const startMatch = async (socket, io, { roomId }) => {
             mazeLayout: grid
         }
     });
+
+    const players = room.users;
+    const playerPositions = Array.from({ length: players.length }, () => [0, 0]);
+
+    for (let i = 0; i < players.length; i++) {
+        let placed = false;
+
+        while (!placed) {
+            const r = Math.floor(Math.random() * isMazeSize.row);
+            const c = Math.floor(Math.random() * isMazeSize.col);
+
+            // Check if cell is open and not already taken
+            if (grid[r][c] === 0 && !playerPositions.some(pos => pos[0] === r && pos[1] === c)) {
+                playerPositions[i] = [r, c];
+                placed = true;
+            }
+        }
+    }
+    console.log(room)
+    await Promise.all(players.map((player, index) =>
+        prisma.playerMove.create({
+            data: {
+                roomId,
+                selectedMode: gameMode,
+                row: playerPositions[index][0],
+                col: playerPositions[index][1],
+                tag: player.id,
+            },
+        })
+    ));
+
+
     io.to(roomId).emit(SOCKET_EVENTS.MAZE_CREATED, {
         gameMode,
         mazeSize: isMazeSize,

@@ -16,7 +16,7 @@ model User {
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
     rooms        Room[]   @relation("RoomUsers")
-    createdRooms Room[]   @relation("RoomCreator")
+    createdRooms Room[]   @relation("RoomCreator") // no onDelete here
 }
 
 model GameMode {
@@ -25,10 +25,11 @@ model GameMode {
     description String?
     options     GameModeOption[]
     rooms       Room[]
+    playerMove  PlayerMove[]
 }
 
 model GameModeOption {
-    gameMode     GameMode       @relation(fields: [gameModeId], references: [id])
+    gameMode     GameMode       @relation(fields: [gameModeId], references: [id], onDelete: Cascade)
     gameModeId   String
     key          String
     label        String
@@ -52,24 +53,25 @@ model Room {
     id           String       @id @default(uuid())
     name         String
     type         RoomType
-    gameMode     GameMode     @relation(fields: [selectedMode], references: [id])
+    gameMode     GameMode     @relation(fields: [selectedMode], references: [id], onDelete: Cascade)
     selectedMode String
     options      RoomOption[]
     users        User[]       @relation("RoomUsers")
-    creator      User         @relation("RoomCreator", fields: [createdBy], references: [id])
+    creator      User         @relation("RoomCreator", fields: [createdBy], references: [id], onDelete: Cascade)
     createdBy    String
     roomCode     String
     mazeLayout   Json?
+    playerMove   PlayerMove[]
     createdAt    DateTime     @default(now())
 }
 
 model RoomOption {
     id             String         @id @default(uuid())
-    gameModeOption GameModeOption @relation(fields: [gameModeId, name], references: [gameModeId, key])
+    gameModeOption GameModeOption @relation(fields: [gameModeId, name], references: [gameModeId, key], onDelete: Cascade)
     gameModeId     String
     name           String
     value          String
-    room           Room           @relation(fields: [roomId], references: [id])
+    room           Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
     roomId         String
 }
 
@@ -81,4 +83,15 @@ enum RoomOptionType {
 enum RoomType {
     Public
     Private
+}
+
+model PlayerMove {
+    id           String   @id @default(uuid())
+    room         Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    roomId       String
+    gameMode     GameMode @relation(fields: [selectedMode], references: [id], onDelete: Cascade)
+    selectedMode String
+    row          Int
+    col          Int
+    tag          String
 }
