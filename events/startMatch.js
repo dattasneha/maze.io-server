@@ -83,7 +83,7 @@ export const startMatch = async (socket, io, { roomId }) => {
         }
     }
     console.log(room)
-    await Promise.all(players.map((player, index) =>
+    const playerMove = await Promise.all(players.map((player, index) =>
         prisma.playerMove.create({
             data: {
                 roomId,
@@ -98,7 +98,7 @@ export const startMatch = async (socket, io, { roomId }) => {
 
     io.to(roomId).emit(SOCKET_EVENTS.MAZE_CREATED, {
         gameMode,
-        mazeSize: isMazeSize,
-        grid
+        grid,
+        playerMove
     });
 };
