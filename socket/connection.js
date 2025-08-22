@@ -1,6 +1,6 @@
 import { SOCKET_EVENTS } from "../constants/socketEvents.js";
 import { handleJoinRoom } from "../events/joinRoom.js";
-import { selectGoal } from "../events/mazeDuelEvents.js";
+import { movePlayer, selectGoal } from "../events/mazeDuelEvents.js";
 import { startMatch } from "../events/startMatch.js";
 import { prisma } from "../utils/prismaClient.js";
 
@@ -21,6 +21,7 @@ export const handleConnction = (socket, io) => {
         console.log("START_MATCH event received");
         await startMatch(socket, io, { roomId: roomId });
     });
+
     socket.on(SOCKET_EVENTS.SELECT_GOAL, async (data) => {
         console.log("SELECT_GOAL event received");
         await selectGoal(socket, io, {
@@ -29,6 +30,15 @@ export const handleConnction = (socket, io) => {
             userId: socket.user.id
         });
     });
+
+    socket.on(SOCKET_EVENTS.MOVE_PLAYER, async (data) => {
+        console.log("MOVE_PLAYER event received");
+        await movePlayer(socket, io, {
+            roomId: roomId,
+            position: data,
+            userId: socket.user.id
+        });
+    })
     socket.on(SOCKET_EVENTS.DISCONNECT, async (reason) => {
         console.log(`Socket disconnected: ${socket.id}, reason: ${reason}`);
 
@@ -39,6 +49,32 @@ export const handleConnction = (socket, io) => {
 
         if (!room) return;
 
+        const playerMove = await prisma.playerMove.findFirst({
+            where: {
+                roomId: roomId,
+                selectedMode: room.selectedMode,
+                tag: socket.user.id
+            }
+        });
+        //remove moves of user 
+        await prisma.playerMove.delete({
+            where: {
+                id: playerMove.id
+            }
+        });
+        const playerGoal = await prisma.playerMove.findFirst({
+            where: {
+                roomId: roomId,
+                selectedMode: room.selectedMode,
+                tag: `G-${socket.user.id}`
+            }
+        });
+        //remove moves of user 
+        await prisma.playerMove.delete({
+            where: {
+                id: playerGoal.id
+            }
+        });
         // Remove user from room
         await prisma.room.update({
             where: { id: roomId },

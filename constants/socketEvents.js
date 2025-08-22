@@ -8,6 +8,8 @@ export const SOCKET_EVENTS = {
     SELECT_GOAL: "select-goal",
     WAITING_FOR_OPPONENT_GOAL_SELECTION: "waiting-for-opponent-goal-selection",
     READY_TO_PLAY: "ready-to-play",
+    MOVE_PLAYER: "move-player",
+    PLAYER_MOVED: "player-moved",
     LEFT_ROOM: "left-room",
     GAME_OVER: "game-over",
     ERROR_MESSAGE: "error-message"

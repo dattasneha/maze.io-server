@@ -19,7 +19,7 @@ export const handleJoinRoom = async (socket, io, { roomId, player }) => {
         },
     });
     if (!room) {
-        socket.disconnect();
+        socket.emit('error-message', { message: 'Room not found' });
         return;
     }
 
