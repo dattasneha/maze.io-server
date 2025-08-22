@@ -39,8 +39,8 @@ export const selectGoal = async (socket, io, { roomId, position, userId }) => {
     }
     const playerMove = await prisma.playerMove.create({
         data: {
-            roomId: roomId,                // scalar field
-            selectedMode: room.selectedMode, // scalar field
+            roomId: roomId,
+            selectedMode: room.selectedMode,
             row: position[0],
             col: position[1],
             tag: `G-${otherPlayer.id}`
