@@ -48,7 +48,17 @@ export const handleConnction = (socket, io) => {
         // Re-fetch room to get current users
         const updatedRoom = await prisma.room.findUnique({
             where: { id: roomId },
-            include: { users: true }
+            include: {
+                users: {
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true
+                    }
+                },
+                gameMode: true,
+                options: true
+            }
         });
 
         // If no users left, delete room and its options
