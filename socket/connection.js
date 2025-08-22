@@ -68,7 +68,7 @@ export const handleConnction = (socket, io) => {
             console.log(`Room ${roomId} deleted`);
         } else {
             console.log(updatedRoom);
-            io.to(roomId).emit(SOCKET_EVENTS.LEFT_ROOM, { updatedRoom });
+            io.to(roomId).emit(SOCKET_EVENTS.LEFT_ROOM, updatedRoom);
         }
     });
 }
