@@ -110,10 +110,11 @@ const joinRoom = asyncHandler(async (req, res) => {
             "Room code is required!"
         );
     }
+
+    // Fetch the room
     const getRoom = await prisma.room.findFirst({
-        where: {
-            roomCode: roomCode
-        }
+        where: { roomCode },
+        include: { users: true }
     });
 
     if (!getRoom) {
@@ -123,57 +124,52 @@ const joinRoom = asyncHandler(async (req, res) => {
         );
     }
 
-    const maxPlayerCount = await prisma.gameModeOption.findUnique(
-        {
-            where: {
-                gameModeId_key: {
-                    gameModeId: getRoom.selectedMode,
-                    key: keys.PLAYERCOUNT
-                }
-            },
-            select: {
-                max: true
-            }
-        }
-    );
-    const roomMemberCount = await prisma.room.findUnique({
-        where: { id: getRoom.id },
-        select: {
-            _count: {
-                select: { users: true }
-            }
-        }
-    });
-
-    if (roomMemberCount?._count.users == maxPlayerCount?.max) {
-        throw new ApiError(
-            STATUS.CLIENT_ERROR.NOT_ACCEPTABLE,
-            "No more player can join the room."
-        );
+    // Check if user is already in room
+    const isUserInRoom = getRoom.users.some(u => u.id === req.user.id);
+    if (isUserInRoom) {
+        return res
+            .status(STATUS.CLIENT_ERROR.CONFLICT)
+            .json(new ApiResponse(null, "User already in room!"));
     }
-    const room = await prisma.room.update({
-        where: { id: getRoom.id },
-        data: {
-            users: {
-                connect: { id: req.user.id }
+
+    // Get max players allowed
+    const maxPlayerCount = await prisma.gameModeOption.findUnique({
+        where: {
+            gameModeId_key: {
+                gameModeId: getRoom.selectedMode,
+                key: keys.PLAYERCOUNT
             }
         },
-        include: {
-            options: true,
-            users: {
-                select: { id: true }
-            }
-        }
+        select: { max: true }
     });
+
+    // Get current player count
+    const roomMemberCount = getRoom.users.length;
+
+    if (roomMemberCount >= maxPlayerCount?.max) {
+        throw new ApiError(
+            STATUS.CLIENT_ERROR.NOT_ACCEPTABLE,
+            "No more players can join the room."
+        );
+    }
+
+    // Add user to room
+    const room = await prisma.room.update({
+        where: { id: getRoom.id },
+        data: { users: { connect: { id: req.user.id } } },
+        include: { options: true, users: { select: { id: true } } }
+    });
+
+    // Optionally emit socket event if user has an active socket
+    if (req.user.socketId) {
+        const io = req.app.get("io");
+        io.to(getRoom.id).emit(SOCKET_EVENTS.JOINED_ROOM, { userId: req.user.id });
+    }
 
     return res
         .status(STATUS.SUCCESS.OK)
-        .json(
-            new ApiResponse(
-                room,
-                "Room joined successfully!"
-            )
-        );
+        .json(new ApiResponse(room, "Room joined successfully!"));
 });
+
 
 export { createRoom, joinRoom }
