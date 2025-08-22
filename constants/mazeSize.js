@@ -1,42 +1,42 @@
 export const mazeSize = {
     'maze-duel': {
-        small: {
+        Small: {
             row: 20,
             col: 20
         },
-        medium: {
+        Medium: {
             row: 30,
             col: 30
         },
-        large: {
+        Large: {
             row: 40,
             col: 40
         }
     },
     'maze-royale': {
-        small: {
+        Small: {
             row: 40,
             col: 20
         },
-        medium: {
+        Medium: {
             row: 60,
             col: 40
         },
-        large: {
+        Large: {
             row: 80,
             col: 60
         }
     },
     'tag-maze': {
-        small: {
+        Small: {
             row: 20,
             col: 20
         },
-        medium: {
+        Medium: {
             row: 40,
             col: 40
         },
-        large: {
+        Large: {
             row: 60,
             col: 60
         }
