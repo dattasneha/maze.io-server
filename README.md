@@ -179,13 +179,128 @@ Response
   }
 }
 ```
-**Socket Events:**
+## Socket.IO Events
 
-The server uses Socket.IO for real-time communication. The following events are handled:
+The server uses Socket.IO for real-time gameplay (maze duel, player moves, goals, etc).
+Clients must connect with a valid roomId and authenticated user attached to the socket.
 
--   `joinRoom`: Handles user joining a room (Refer to `events/joinRoom.js`).
--   `startMatch`: Initiates a game match (Refer to `events/startMatch.js`).
--   `mazeDuelEvents`: Game-specific events for the Maze Duel game mode (Refer to `events/mazeDuelEvents.js`).
+### Connection
+
+Client connects with query params:
+```javascript
+const socket = io("http://localhost:5000", {
+  query: { roomId: "ROOM_ID" },
+  auth: { token: "JWT_ACCESS_TOKEN" }
+});
+```
+
+On connection:
+
+The socket joins the room (socket.join(roomId)).
+
+The server broadcasts JOIN_ROOM to all clients in the room.
+
+### Socket Events
+JOIN_ROOM
+
+Sent by the server when a new player joins.
+
+Payload (example):
+```javascript
+{
+  "id": "room1",
+  "users": [
+    { "id": "u1", "email": "p1@mail.com", "name": "Player 1" },
+    { "id": "u2", "email": "p2@mail.com", "name": "Player 2" }
+  ],
+  "gameMode": { "id": "classic", "name": "Classic Mode" },
+  "options": [...]
+}
+```
+START_MATCH
+
+Client → Server
+Trigger maze generation and start match.
+
+socket.emit("START_MATCH");
+
+
+Server → Clients:
+```javascript
+{
+  "gameMode": "classic",
+  "grid": [[1,0,1,0], [0,0,1,0], ...], // maze layout
+  "playerMove": [
+    { "row": 2, "col": 1, "tag": "userId1" },
+    { "row": 5, "col": 3, "tag": "userId2" }
+  ]
+}
+
+```
+Event name: MAZE_CREATED
+
+SELECT_GOAL
+
+Client → Server
+Each player selects a goal position for the opponent.
+
+socket.emit("SELECT_GOAL", [row, col]);
+
+
+Server Responses:
+
+If one goal selected → WAITING_FOR_OPPONENT_GOAL_SELECTION
+
+If both selected → READY_TO_PLAY
+```javascript
+{
+  "playerMove": [
+    { "row": 0, "col": 4, "tag": "G-userId1" },
+    { "row": 5, "col": 7, "tag": "G-userId2" }
+  ]
+}
+```
+MOVE_PLAYER
+
+Client → Server
+Make a move to an adjacent cell.
+
+socket.emit("MOVE_PLAYER", [newRow, newCol]);
+
+
+Server Responses:
+
+PLAYER_MOVED
+```javascript
+{ "row": 1, "col": 2, "tag": "userId1" }
+
+```
+If player reaches goal → GAME_OVER
+```javascript
+{ "id": "u1", "email": "p1@mail.com", "name": "Winner!" }
+```
+LEFT_ROOM
+
+Emitted when a player disconnects.
+```javascript
+{
+  "id": "room1",
+  "users": [
+    { "id": "u2", "name": "Remaining Player" }
+  ]
+}
+```
+
+If no users remain → the room is deleted.
+
+ERROR_MESSAGE
+
+Server emits this event when a validation or game rule fails.
+
+Example:
+
+{ "message": "Invalid move" }
+
 
 ## Configuration Options
 
